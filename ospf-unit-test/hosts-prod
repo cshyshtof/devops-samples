@@ -1,0 +1,7 @@
+[ios]
+r1 ansible_ssh_host=172.16.10.11
+r2 ansible_ssh_host=172.16.10.12
+
+[nxos]
+nx1 ansible_ssh_host=172.16.10.13
+nx2 ansible_ssh_host=172.16.10.14

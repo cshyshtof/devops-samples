@@ -1,0 +1,70 @@
+---
+- name: Configure NXOS
+  hosts: nxos
+  connection: local
+  gather_facts: no
+  tasks:
+
+  - name: Enable features
+    nxos_feature:
+      feature: "{{ item.feature }}"
+      provider: "{{ nxapi }}"
+    with_items: "{{ features }}"
+
+  - name: L3 interfaces
+    nxos_interface:
+      interface: "{{ item.interface }}"
+      description: "{{ item.desc }}"
+      admin_state: up
+      mode: layer3
+      provider: "{{ nxapi }}"
+    with_items:
+      - "{{ l3_if }}"
+
+  - name: Interface MTU
+    nxos_mtu:
+      interface: "{{ item.interface }}"
+      mtu: "{{ item.mtu }}"
+      provider: "{{ nxapi }}"
+    with_items:
+      - "{{ l3_if }}"
+
+  - name: IP addresses
+    nxos_ip_interface:
+      interface: "{{ item.interface }}"
+      addr: "{{ item.addr }}"
+      mask: "{{ item.mask }}"
+      provider: "{{ nxapi }}"
+    with_items:
+      - "{{ l3_if }}"
+
+  - name: Set OSPF router ID
+    nxos_ospf_vrf:
+      ospf: 1
+      router_id: "{{ router_id }}"
+      provider: "{{ nxapi }}"
+
+  - name: Associate interfaces with OSPF
+    nxos_interface_ospf:
+      interface: "{{ item.interface }}"
+      ospf: 1
+      area: 0
+      passive_interface: "{{ item.passive }}"
+      provider: "{{ nxapi }}"
+    with_items: "{{ ospf_if }}"
+
+#- hosts: ios
+#  connection: local
+#  gather_facts: no
+#  tasks:
+#  - name: Configure SNMP
+#    ios_config:
+#      provider: "{{ cli }}"
+#      commands:
+#        - "snmp-server community {{ snmp.community  }} RO"
+#
+#  - name: Configure other management
+#    ios_config:
+#      provider: "{{ cli }}"
+#      src: config-mgmt.j2
+

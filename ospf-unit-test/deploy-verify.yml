@@ -1,0 +1,65 @@
+---
+- name: Verify config
+  connection: local
+  hosts: nxos
+  ignore_errors: yes
+  tasks:
+  - name: Verify interface IP
+    nxos_command:
+      commands:
+        - "show ip interface Eth2/1"
+      provider: "{{ nxapi }}"
+    register: deb_if
+  - debug:
+      msg: >
+        Interface Eth2/1:{{ deb_if.stdout[0].TABLE_intf.ROW_intf['admin-state'] }}
+        IP:{{ deb_if.stdout[0].TABLE_intf.ROW_intf.prefix }}/{{ deb_if.stdout[0].TABLE_intf.ROW_intf.masklen }}
+        MTU:{{ deb_if.stdout[0].TABLE_intf.ROW_intf.mtu }}
+    when: deb_if.stdout[0].TABLE_intf.ROW_intf['admin-state'] is defined
+  - fail: msg="Unable to get interface IP info (propably interface is not configured for L3)"
+    when: deb_if.stdout[0].TABLE_intf.ROW_intf['admin-state'] is not defined
+
+  - name: Verify interface OSPF
+    nxos_command:
+      commands:
+        - "show ip ospf interface Eth2/1"
+      provider: "{{ nxapi }}"
+    register: deb_oif
+  - debug:
+      msg: >
+        Interface Eth2/1:{{ deb_oif.stdout[0].TABLE_ctx.ROW_ctx.TABLE_intf.ROW_intf.area }}
+        Hello:{{ deb_oif.stdout[0].TABLE_ctx.ROW_ctx.TABLE_intf.ROW_intf.hello_interval }}
+        Dead:{{ deb_oif.stdout[0].TABLE_ctx.ROW_ctx.TABLE_intf.ROW_intf.dead_interval }}
+        Priority:{{ deb_oif.stdout[0].TABLE_ctx.ROW_ctx.TABLE_intf.ROW_intf.if_priority }}
+        Type:{{ deb_oif.stdout[0].TABLE_ctx.ROW_ctx.TABLE_intf.ROW_intf.type_str }}
+    when: deb_oif.stdout[0].TABLE_ctx.ROW_ctx.TABLE_intf is defined
+  - fail: msg="Unable to get ospf interface info (probably OSPF is not configured on that interface)"
+    when: deb_oif.stdout[0].TABLE_ctx.ROW_ctx.TABLE_intf is not defined
+
+  - name: Verify OSPF neighbors
+    nxos_command:
+      commands:
+        - "show ip ospf neighbor Eth2/1"
+      provider: "{{ nxapi }}"
+    register: deb_ospf
+  - debug:
+      msg: "Neighbor state: {{ deb_ospf.stdout[0].TABLE_ctx.ROW_ctx.TABLE_nbr.ROW_nbr.state }}"
+    when: deb_ospf.stdout[0].TABLE_ctx.ROW_ctx.TABLE_nbr is defined
+  - fail: msg="Unable to get ospf neighbors info (probably no neighborship)"
+    when: deb_ospf.stdout[0].TABLE_ctx.ROW_ctx.TABLE_nbr is not defined
+
+
+- name: Ping tests
+  connection: local
+  gather_facts: no
+  hosts: r1
+  tasks:
+  - name: End to end ping
+    ios_command:
+      commands: "ping {{ item }}"
+      provider: "{{ cli }}"
+    with_items: "{{ ping_target }}"
+    register: ping
+  - fail: msg="End to end ping failed"
+    when: "'!!!' not in ping.results[0].stdout[0]"
+

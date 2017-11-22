@@ -1,0 +1,96 @@
+R1:
+
+hostname r1
+
+aaa new-model
+aaa authentication login default local-case
+aaa authorization exec default local if-authenticated
+
+username admin privilege 15 secret admin
+
+ip domain name lab.local
+
+interface GigabitEthernet0/0
+ description OOB Management
+ vrf forwarding Mgmt-intf
+ ip address 10.10.239.11 255.255.255.0
+
+ip route vrf Mgmt-intf 0.0.0.0 0.0.0.0 10.10.239.1
+ 
+router ospf 1
+ router-id 10.10.10.2
+ network 10.10.10.2 0.0.0.0 area 0
+
+interface GigabitEthernet0/1
+ ip address 10.10.10.2 255.255.255.252
+ no shutdown
+
+
+R2:
+
+hostname r2
+
+aaa new-model
+aaa authentication login default local-case
+aaa authorization exec default local if-authenticated
+
+username admin privilege 15 secret admin
+
+ip domain name lab.local
+
+interface GigabitEthernet0/0
+ description OOB Management
+ vrf forwarding Mgmt-intf
+ ip address 10.10.239.12 255.255.255.0
+
+ip route vrf Mgmt-intf 0.0.0.0 0.0.0.0 10.10.239.1
+
+router ospf 1
+ router-id 10.10.10.10
+ network 10.10.10.10 0.0.0.0 area 0
+
+interface GigabitEthernet0/1
+ ip address 10.10.10.10 255.255.255.252
+ no shutdown
+
+ 
+NX1:
+
+feature nxapi
+
+hostname nx1
+
+username admin password admin role network-admin
+
+no password strength-check
+
+ip domain-name lab.local
+
+vrf context management
+  ip route 0.0.0.0/0 10.10.239.1
+
+interface mgmt0
+  description OOB Management
+  vrf member management
+  ip address 10.10.239.13/24
+  
+  
+NX2:
+
+feature nxapi
+
+hostname nx2
+
+username admin password admin role network-admin
+
+no password strength-check
+
+ip domain-name lab.local
+
+vrf context management
+  ip route 0.0.0.0/0 10.10.239.1
+
+interface mgmt0
+  description OOB Management
+  vrf member management
+  ip address 10.10.239.14/24

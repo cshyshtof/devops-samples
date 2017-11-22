@@ -1,0 +1,22 @@
+---
+cli:
+  username: "{{ansible_ssh_user}}"
+  password: "{{ansible_ssh_pass}}"
+  host: "{{ip|default(ansible_host)|default(inventory_hostname)}}"
+  transport: cli
+
+nxapi:
+  username: "{{ansible_ssh_user}}"
+  password: "{{ansible_ssh_pass}}"
+  host: "{{ip|default(ansible_host)|default(inventory_hostname)}}"
+  transport: nxapi
+  timeout: 60
+
+snmp:
+  community: "public"
+
+ntp:
+  server: "1.1.1.1"
+
+ping_target:
+  - "10.10.10.10"

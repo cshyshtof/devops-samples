@@ -1,0 +1,22 @@
+---
+- name: Show IOS nodes version
+  connection: local
+  hosts: ios
+  tasks:
+  - ios_facts:
+      gather_subset: all
+      provider: "{{cli}}"
+    register: facts
+  - debug:
+      msg="Host {{facts.ansible_facts.ansible_net_hostname}} is a {{facts.ansible_facts.ansible_net_model}} running version {{facts.ansible_facts.ansible_net_version}}"
+
+- name: Show NX nodes version
+  connection: local
+  hosts: nxos
+  tasks:
+  - nxos_facts:
+      gather_subset: all
+      provider: "{{cli}}"
+    register: facts
+  - debug:
+      msg="Host {{facts.ansible_facts.ansible_net_hostname}} is a {{facts.ansible_facts.ansible_net_model}} running version {{facts.ansible_facts.ansible_net_version}}"

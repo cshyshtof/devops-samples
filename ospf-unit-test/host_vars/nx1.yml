@@ -1,0 +1,10 @@
+---
+router_id: 1.1.1.1
+
+l3_if:
+  - { interface: Ethernet2/1, desc: "To NX2", addr: "10.10.10.5", mask: 30, mtu: 1400 }
+  - { interface: Ethernet2/2, desc: "To R1", addr: "10.10.10.1", mask: 30, mtu: 1500 }
+
+ospf_if:
+  - { interface: Ethernet2/1, passive: false }
+  - { interface: Ethernet2/2, passive: false }
